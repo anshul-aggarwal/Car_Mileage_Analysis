@@ -62,7 +62,7 @@ def analyse_mpg_growth(mpg, type_mpg):
     
     mpg_merged["TimeDiff"] = mpg_merged["Year_maxY"] - mpg_merged["Year_minY"]
     
-    #AEI: Annualized efficiency improvement
+    #AEI: Annualized average efficiency improvement
     mpg_merged["AEI"] = (np.expm1((np.log(mpg_merged[type_mpg+" mpg_maxY"]/mpg_merged[type_mpg+" mpg_minY"]))/mpg_merged["TimeDiff"]))*100
     mpg_merged = mpg_merged.dropna()
     mpg_merged = mpg_merged.reset_index()
@@ -88,7 +88,7 @@ def analyse_price_growth(avg_prices):
     
     avg_prices_merged["TimeDiff"] = avg_prices_merged["Year_maxY"] - avg_prices_merged["Year_minY"]
     
-    #AEI: Annualized efficiency improvement
+    #API: Annualized Average Price Increase
     avg_prices_merged["API"] = (np.expm1((np.log(avg_prices_merged["MSRP (USD)_maxY"]/avg_prices_merged["MSRP (USD)_minY"]))/avg_prices_merged["TimeDiff"]))*100
     avg_prices_merged = avg_prices_merged.dropna()
     avg_prices_merged = avg_prices_merged.reset_index()
@@ -115,6 +115,6 @@ if __name__ == '__main__':
     city_aei = analyse_mpg_growth(city, "City")
     highway_aei = analyse_mpg_growth(highway, "Highway")
 
-    #Analyse Average car price increase, compared to inflation
+    #Analyse Annualized Average car price increase, compared to inflation
     avg_prices = df["MSRP (USD)"]
     analyse_price_growth(avg_prices)
