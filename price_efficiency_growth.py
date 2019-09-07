@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+US_INFLATION_AVG_2001_2019 = 2.04
 
 def preprocess(df):
     #Transpose data
@@ -75,6 +76,31 @@ def analyse_mpg_growth(mpg, type_mpg):
     fig.savefig(type_mpg+"_aei.png")
 
 
+def analyse_price_growth(avg_prices):
+    avg_prices = avg_prices.reset_index()
+    avg_prices_max = avg_prices.loc[avg_prices.groupby(['Make', 'Model'])['Year'].idxmax()]
+    avg_prices_min = avg_prices.loc[avg_prices.groupby(['Make', 'Model'])['Year'].idxmin()]
+
+    avg_prices_max = avg_prices_max.set_index(['Make', 'Model'])
+    avg_prices_min = avg_prices_min.set_index(['Make', 'Model'])
+
+    avg_prices_merged = avg_prices_max.join(avg_prices_min, lsuffix='_maxY', rsuffix='_minY')
+    
+    avg_prices_merged["TimeDiff"] = avg_prices_merged["Year_maxY"] - avg_prices_merged["Year_minY"]
+    
+    #AEI: Annualized efficiency improvement
+    avg_prices_merged["API"] = (np.expm1((np.log(avg_prices_merged["MSRP (USD)_maxY"]/avg_prices_merged["MSRP (USD)_minY"]))/avg_prices_merged["TimeDiff"]))*100
+    avg_prices_merged = avg_prices_merged.dropna()
+    avg_prices_merged = avg_prices_merged.reset_index()
+    avg_prices_merged = avg_prices_merged[['Make', 'API']]
+    avg_prices_merged = avg_prices_merged.groupby('Make').mean()
+    avg_prices_merged["Avg. Inflation"] = US_INFLATION_AVG_2001_2019
+
+    ax = avg_prices_merged[["API"]].plot.bar()
+    ax = avg_prices_merged[["Avg. Inflation"]].plot(linestyle='-', color='red', ax=ax,rot=90)
+    fig = ax.get_figure()
+    fig.tight_layout()
+    fig.savefig("api.png")
 
 
 if __name__ == '__main__':
@@ -88,3 +114,7 @@ if __name__ == '__main__':
 
     city_aei = analyse_mpg_growth(city, "City")
     highway_aei = analyse_mpg_growth(highway, "Highway")
+
+    #Analyse Average car price increase, compared to inflation
+    avg_prices = df["MSRP (USD)"]
+    analyse_price_growth(avg_prices)
