@@ -1,4 +1,4 @@
-# Car Mileage Analysis
+# Car Mileage and Price Analysis
 
 In collaboration with https://github.com/manasakashyap29
 
